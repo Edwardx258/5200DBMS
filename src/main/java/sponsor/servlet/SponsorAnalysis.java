@@ -4,7 +4,7 @@ import sponsor.dal.*;
 import sponsor.model.*;
 
 import java.io.IOException;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import javax.servlet.annotation.*;
 import javax.servlet.ServletException;
@@ -36,17 +36,8 @@ public class SponsorAnalysis extends HttpServlet {
         req.setAttribute("messages", messages);
         
         try {
-            // Get the analysis timeframe from request, default to "all"
-            String timeframe = req.getParameter("timeframe");
-            if (timeframe == null || timeframe.trim().isEmpty()) {
-                timeframe = "all";
-            }
-            messages.put("timeframe", timeframe);
-            
-            // Get analysis results
-            List<CompanySponsorshipSummary> summaries = getCompanySponsorships(timeframe);
+            List<CompanySponsorshipSummary> summaries = getCompanySponsorships();
             req.setAttribute("sponsorshipSummaries", summaries);
-            
             messages.put("success", "Successfully retrieved sponsorship analysis.");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -59,12 +50,10 @@ public class SponsorAnalysis extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // Handle POST the same way as GET
         doGet(req, resp);
     }
     
-    private List<CompanySponsorshipSummary> getCompanySponsorships(String timeframe) throws SQLException {
-        // Execute SQL to get comprehensive sponsorship data
+    private List<CompanySponsorshipSummary> getCompanySponsorships() throws SQLException {
         String query = """
             SELECT 
                 e.EMPLOYER_ID,
@@ -89,7 +78,6 @@ public class SponsorAnalysis extends HttpServlet {
             ORDER BY COUNT(*) DESC
         """;
         
-        // Execute query using ConnectionManager and process results
         Map<Integer, CompanySponsorshipSummary> summaryMap = new HashMap<>();
         
         try (Connection conn = ConnectionManager.getConnection();
@@ -98,18 +86,23 @@ public class SponsorAnalysis extends HttpServlet {
             
             while (rs.next()) {
                 int employerId = rs.getInt("EMPLOYER_ID");
-                
-                // Create or get existing summary
                 CompanySponsorshipSummary summary = summaryMap.computeIfAbsent(
                     employerId,
-                    id -> new CompanySponsorshipSummary(
-                        rs.getString("EMPLOYER_NAME"),
-                        rs.getString("EMPLOYER_CITY"),
-                        rs.getString("EMPLOYER_STATE_PROVINCE")
-                    )
+                    id -> {
+						try {
+							return new CompanySponsorshipSummary(
+							    rs.getString("EMPLOYER_NAME"),
+							    rs.getString("EMPLOYER_CITY"),
+							    rs.getString("EMPLOYER_STATE_PROVINCE")
+							);
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						return null;
+					}
                 );
                 
-                // Update summary with this record
                 summary.addApplication(
                     rs.getString("SPONSORSHIP_TYPE"),
                     rs.getString("JOB_TITLE"),
@@ -119,14 +112,12 @@ public class SponsorAnalysis extends HttpServlet {
             }
         }
         
-        // Sort by total applications and return
         return summaryMap.values().stream()
             .sorted((a, b) -> b.getTotalApplications() - a.getTotalApplications())
             .toList();
     }
 }
 
-// Helper class to store summary data
 class CompanySponsorshipSummary {
     private String companyName;
     private String city;
