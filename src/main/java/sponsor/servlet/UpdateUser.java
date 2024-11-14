@@ -22,16 +22,16 @@ public class UpdateUser extends HttpServlet {
             boolean isUpdated = usersDAO.updateUser(Integer.parseInt(userId), userName, userEmail, userPassword);
 
             if (isUpdated) {
-                usersDAO.updateUserTimestamp(Integer.parseInt(userId)); // Update timestamp for the user
+                usersDAO.updateUserTimestamp(Integer.parseInt(userId)); 
                 request.setAttribute("message", "User updated successfully.");
             } else {
                 request.setAttribute("error", "Failed to update user.");
             }
-            request.getRequestDispatcher("updateUser.jsp").forward(request, response);
+            request.getRequestDispatcher("UpdateUser.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "An error occurred: " + e.getMessage());
-            request.getRequestDispatcher("updateUser.jsp").forward(request, response);
+            request.getRequestDispatcher("UpdateUser.jsp").forward(request, response);
         }
     }
 }

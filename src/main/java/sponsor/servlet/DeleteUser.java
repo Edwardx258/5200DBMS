@@ -23,11 +23,11 @@ public class DeleteUser extends HttpServlet {
          } else {
              request.setAttribute("error", "Failed to delete user.");
          }
-         request.getRequestDispatcher("deleteUser.jsp").forward(request, response);
+         request.getRequestDispatcher("DeleteUser.jsp").forward(request, response);
      } catch (Exception e) {
          e.printStackTrace();
          request.setAttribute("error", "An error occurred: " + e.getMessage());
-         request.getRequestDispatcher("deleteUser.jsp").forward(request, response);
+         request.getRequestDispatcher("DeleteUser.jsp").forward(request, response);
      }
  }
 }
