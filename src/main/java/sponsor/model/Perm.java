@@ -1,10 +1,14 @@
 package sponsor.model;
+import java.sql.Date;
+
 public class Perm {
     private int permId;
     private String caseNumber;
     private double approvalRate;
     private int avgProcessingTime;
     private String industry;
+
+    public Perm() {}
 
     public Perm(int permId, String caseNumber, double approvalRate, int avgProcessingTime, String industry) {
         this.permId = permId;

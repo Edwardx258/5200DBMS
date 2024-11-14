@@ -1,85 +1,159 @@
 package sponsor.dal;
+import sponsor.model.User;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data access object (DAO) class to interact with the underlying Users table in your
+ * MySQL instance. This is used to store {@link Users} into your MySQL instance and 
+ * retrieve {@link Users} from MySQL instance.
+ */
 public class UsersDAO {
-    public void createUser(User user) throws SQLException {
-        String query = "INSERT INTO Users (USERNAME, EMAIL, PASSWORD_HASH, CREATED_AT) VALUES (?, ?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getEmail());
-            stmt.setString(3, user.getPasswordHash());
-            stmt.setTimestamp(4, user.getCreatedAt());
-            stmt.executeUpdate();
+    private static UsersDAO instance = null;
+    protected ConnectionManager connectionManager;
 
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    user.setUserId(generatedKeys.getInt(1));
+    protected UsersDAO() {
+        connectionManager = new ConnectionManager();
+    }
+
+    public static UsersDAO getInstance() {
+        if (instance == null) {
+            instance = new UsersDAO();
+        }
+        return instance;
+    }
+
+    public User create(User user) throws SQLException {
+        String insertUser = "INSERT INTO Users(UserName, Email, PasswordHash, CreatedAt) VALUES(?, ?, ?, ?);";
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement insertStmt = connection.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS)) {
+
+            insertStmt.setString(1, user.getUsername());
+            insertStmt.setString(2, user.getEmail());
+            insertStmt.setString(3, user.getPasswordHash());
+            insertStmt.setTimestamp(4, new Timestamp(user.getCreatedAt().getTime()));
+            insertStmt.executeUpdate();
+
+            try (ResultSet resultKey = insertStmt.getGeneratedKeys()) {
+                if (resultKey.next()) {
+                    user.setUserId(resultKey.getInt(1));
                 }
             }
+            return user;
         }
     }
 
-    // READ the data by the userId
-    public User getUserById(int userId) throws SQLException {
-        String query = "SELECT * FROM Users WHERE USER_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, userId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return new User(
-                    rs.getInt("USER_ID"),
-                    rs.getString("USERNAME"),
-                    rs.getString("EMAIL"),
-                    rs.getString("PASSWORD_HASH"),
-                    rs.getTimestamp("CREATED_AT")
-                );
+    public User getUserByUserId(int userId) throws SQLException {
+        String selectUser = "SELECT UserId, UserName, Email, PasswordHash, CreatedAt FROM Users WHERE UserId=?;";
+        
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement selectStmt = connection.prepareStatement(selectUser)) {
+             
+            selectStmt.setInt(1, userId);
+            
+            try (ResultSet results = selectStmt.executeQuery()) {
+                if (results.next()) {
+                    String username = results.getString("UserName");
+                    String email = results.getString("Email");
+                    String passwordHash = results.getString("PasswordHash");
+                    Date createdAt = new Date(results.getTimestamp("CreatedAt").getTime());
+                    return new User(userId, username, email, passwordHash, createdAt);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+        return null;
+    }
+
+    public User updateEmail(User user, String newEmail) throws SQLException {
+        String updateUser = "UPDATE Users SET Email=? WHERE UserId=?;";
+        Connection connection = null;
+        PreparedStatement updateStmt = null;
+        try {
+            connection = connectionManager.getConnection();
+            updateStmt = connection.prepareStatement(updateUser);
+            updateStmt.setString(1, newEmail);
+            updateStmt.setInt(2, user.getUserId());
+            updateStmt.executeUpdate();
+            user.setEmail(newEmail);
+            return user;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (updateStmt != null) {
+                updateStmt.close();
+            }
+        }
+    }
+
+    public User delete(User user) throws SQLException {
+        String deleteUser = "DELETE FROM Users WHERE UserId=?;";
+        Connection connection = null;
+        PreparedStatement deleteStmt = null;
+        try {
+            connection = connectionManager.getConnection();
+            deleteStmt = connection.prepareStatement(deleteUser);
+            deleteStmt.setInt(1, user.getUserId());
+            int affectedRows = deleteStmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("No records available to delete for UserId=" + user.getUserId());
             }
             return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (deleteStmt != null) {
+                deleteStmt.close();
+            }
         }
     }
 
-    // READ all the users
-    public List<User> getAllUsers() throws SQLException {
-        String query = "SELECT * FROM Users";
+    public List<User> getUsersByUsername(String username) throws SQLException {
         List<User> usersList = new ArrayList<>();
-        try (Connection connection = ConnectionManager.getConnection();
-             Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) {
-                usersList.add(new User(
-                    rs.getInt("USER_ID"),
-                    rs.getString("USERNAME"),
-                    rs.getString("EMAIL"),
-                    rs.getString("PASSWORD_HASH"),
-                    rs.getTimestamp("CREATED_AT")
-                ));
+        String selectUsers = "SELECT UserId, UserName, Email, PasswordHash, CreatedAt FROM Users WHERE UserName=?;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
+        try {
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectUsers);
+            selectStmt.setString(1, username);
+            results = selectStmt.executeQuery();
+            while (results.next()) {
+                int userId = results.getInt("UserId");
+                String resultUsername = results.getString("UserName");
+                String email = results.getString("Email");
+                String passwordHash = results.getString("PasswordHash");
+                Date createdAt = new Date(results.getTimestamp("CreatedAt").getTime());
+                User user = new User(userId, resultUsername, email, passwordHash, createdAt);
+                usersList.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (selectStmt != null) {
+                selectStmt.close();
+            }
+            if (results != null) {
+                results.close();
             }
         }
         return usersList;
-    }
-
-    public void updateUser(User user) throws SQLException {
-        String query = "UPDATE Users SET USERNAME = ?, EMAIL = ?, PASSWORD_HASH = ? WHERE USER_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getEmail());
-            stmt.setString(3, user.getPasswordHash());
-            stmt.setInt(4, user.getUserId());
-            stmt.executeUpdate();
-        }
-    }
-
-    public void deleteUser(int userId) throws SQLException {
-        String query = "DELETE FROM Users WHERE USER_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, userId);
-            stmt.executeUpdate();
-        }
     }
 }

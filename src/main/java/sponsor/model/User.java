@@ -1,14 +1,18 @@
 package sponsor.model;
-import java.sql.Timestamp;
+import java.util.Date;
 
+/**
+ * Users is a simple, plain old Java object (POJO).
+ */
 public class User {
-    private int userId;
-    private String username;
-    private String email;
-    private String passwordHash;
-    private Timestamp createdAt;
+    protected int userId;
+    protected String username;
+    protected String email;
+    protected String passwordHash;
+    protected Date createdAt;
 
-    public User(int userId, String username, String email, String passwordHash, Timestamp createdAt) {
+    // Constructor with all fields
+    public User(int userId, String username, String email, String passwordHash, Date createdAt) {
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -16,19 +20,52 @@ public class User {
         this.createdAt = createdAt;
     }
 
+    // Constructor with only essential fields
+    public User(String username, String email, String passwordHash) {
+        this.username = username;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.createdAt = new Date(); // Set to current date and time
+    }
+
     // Getters and setters
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
+    public int getUserId() {
+        return userId;
+    }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 }

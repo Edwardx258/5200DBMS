@@ -1,16 +1,29 @@
 package sponsor.model;
 import java.sql.Date;
 
+/**
+ * Application is a simple, plain old Java object (POJO) representing a record in the Application table.
+ */
 public class Application {
-    private int applicationId;
-    private String caseNumber;
-    private Date receivedDate;
-    private Date decisionDate;
-    private Date origFileDate;
-    private String caseStatus;
+    protected int applicationId;
+    protected String caseNumber;
+    protected Date receivedDate;
+    protected Date decisionDate;
+    protected Date origFileDate;
+    protected String caseStatus;
 
+    // Constructor with all fields
     public Application(int applicationId, String caseNumber, Date receivedDate, Date decisionDate, Date origFileDate, String caseStatus) {
         this.applicationId = applicationId;
+        this.caseNumber = caseNumber;
+        this.receivedDate = receivedDate;
+        this.decisionDate = decisionDate;
+        this.origFileDate = origFileDate;
+        this.caseStatus = caseStatus;
+    }
+
+    // Constructor without applicationId (useful for creating new Application records)
+    public Application(String caseNumber, Date receivedDate, Date decisionDate, Date origFileDate, String caseStatus) {
         this.caseNumber = caseNumber;
         this.receivedDate = receivedDate;
         this.decisionDate = decisionDate;
