@@ -7,27 +7,32 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import sponsor.dal.UsersDAO;
+
 @WebServlet("/DeleteUser")
 public class DeleteUser extends HttpServlet {
- private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
- protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-     String userId = request.getParameter("userId");
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String userId = request.getParameter("userId");
 
-     try {
-         UsersDAO usersDAO = new UsersDAO();
-         boolean isDeleted = usersDAO.deleteUser(Integer.parseInt(userId));
+        try {
+            UsersDAO usersDAO = new UsersDAO();
+            int parsedUserId = Integer.parseInt(userId);
 
-         if (isDeleted) {
-             request.setAttribute("message", "User deleted successfully.");
-         } else {
-             request.setAttribute("error", "Failed to delete user.");
-         }
-         request.getRequestDispatcher("DeleteUser.jsp").forward(request, response);
-     } catch (Exception e) {
-         e.printStackTrace();
-         request.setAttribute("error", "An error occurred: " + e.getMessage());
-         request.getRequestDispatcher("DeleteUser.jsp").forward(request, response);
-     }
- }
+            usersDAO.deleteUser(parsedUserId);
+
+            request.setAttribute("message", "User deleted successfully.");
+        } catch (NumberFormatException e) {
+
+            e.printStackTrace();
+            request.setAttribute("error", "Invalid User ID format.");
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            request.setAttribute("error", "An error occurred: " + e.getMessage());
+        }
+
+        request.getRequestDispatcher("DeleteUser.jsp").forward(request, response);
+    }
 }

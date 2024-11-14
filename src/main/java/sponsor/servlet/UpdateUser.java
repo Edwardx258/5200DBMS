@@ -7,6 +7,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import sponsor.dal.UsersDAO;
+import sponsor.model.User;
+
 @WebServlet("/UpdateUser")
 public class UpdateUser extends HttpServlet {
     private static final long serialVersionUID = 1L;
@@ -19,20 +22,37 @@ public class UpdateUser extends HttpServlet {
 
         try {
             UsersDAO usersDAO = new UsersDAO();
-            boolean isUpdated = usersDAO.updateUser(Integer.parseInt(userId), userName, userEmail, userPassword);
+            int parsedUserId = Integer.parseInt(userId);
 
-            if (isUpdated) {
-                usersDAO.updateUserTimestamp(Integer.parseInt(userId)); 
+
+            User existingUser = usersDAO.getUserById(parsedUserId);
+            if (existingUser != null) {
+
+                existingUser.setUsername(userName);
+                existingUser.setEmail(userEmail);
+                existingUser.setPasswordHash(userPassword);
+
+
+                usersDAO.updateUser(existingUser);
+
+
                 request.setAttribute("message", "User updated successfully.");
             } else {
-                request.setAttribute("error", "Failed to update user.");
+
+                request.setAttribute("error", "User not found.");
             }
-            request.getRequestDispatcher("UpdateUser.jsp").forward(request, response);
+        } catch (NumberFormatException e) {
+
+            e.printStackTrace();
+            request.setAttribute("error", "Invalid User ID format.");
         } catch (Exception e) {
+
             e.printStackTrace();
             request.setAttribute("error", "An error occurred: " + e.getMessage());
-            request.getRequestDispatcher("UpdateUser.jsp").forward(request, response);
         }
+
+
+        request.getRequestDispatcher("UpdateUser.jsp").forward(request, response);
     }
 }
 
