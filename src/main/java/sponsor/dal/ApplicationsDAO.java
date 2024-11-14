@@ -2,11 +2,25 @@ package sponsor.dal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import sponsor.model.Application;
 
 public class ApplicationsDAO {
+    private static ApplicationsDAO instance = null;
+    protected ConnectionManager connectionManager;
+
+    protected ApplicationsDAO() {
+        connectionManager = new ConnectionManager();
+    }
+
+    public static ApplicationsDAO getInstance() {
+        if (instance == null) {
+            instance = new ApplicationsDAO();
+        }
+        return instance;
+    }
     public void createApplication(Application application) throws SQLException {
         String query = "INSERT INTO Application (CASE_NUMBER, RECEIVED_DATE, DECISION_DATE, ORIG_FILE_DATE, CASE_STATUS) VALUES (?, ?, ?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, application.getCaseNumber());
             stmt.setDate(2, application.getReceivedDate());
@@ -26,7 +40,7 @@ public class ApplicationsDAO {
     // READ the data by application Id
     public Application getApplicationById(int applicationId) throws SQLException {
         String query = "SELECT * FROM Application WHERE APPLICATION_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, applicationId);
             ResultSet rs = stmt.executeQuery();
@@ -48,7 +62,7 @@ public class ApplicationsDAO {
     public List<Application> getAllApplications() throws SQLException {
         String query = "SELECT * FROM Application";
         List<Application> applicationsList = new ArrayList<>();
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
@@ -67,7 +81,7 @@ public class ApplicationsDAO {
 
     public void updateApplication(Application application) throws SQLException {
         String query = "UPDATE Application SET CASE_NUMBER = ?, RECEIVED_DATE = ?, DECISION_DATE = ?, ORIG_FILE_DATE = ?, CASE_STATUS = ? WHERE APPLICATION_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, application.getCaseNumber());
             stmt.setDate(2, application.getReceivedDate());
@@ -81,7 +95,7 @@ public class ApplicationsDAO {
 
     public void deleteApplication(int applicationId) throws SQLException {
         String query = "DELETE FROM Application WHERE APPLICATION_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, applicationId);
             stmt.executeUpdate();

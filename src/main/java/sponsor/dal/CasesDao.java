@@ -2,12 +2,26 @@ package sponsor.dal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import sponsor.model.Cases;
 
 public class CasesDao {
+    private static CasesDao instance = null;
+    protected ConnectionManager connectionManager;
+
+    protected CasesDao() {
+        connectionManager = new ConnectionManager();
+    }
+
+    public static CasesDao getInstance() {
+        if (instance == null) {
+            instance = new CasesDao();
+        }
+        return instance;
+    }
 
     public void createCase(Cases caseObj) throws SQLException {
         String query = "INSERT INTO Cases (CASE_NUMBER, CASE_STATUS, RECEIVED_DATE, DECISION_DATE, ORIG_FILE_DATE, PREVIOUS_SWA_CASE_NUMBER_STATE, SCHD_A_SHEEPHERDER) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, caseObj.getCaseNumber());
             stmt.setString(2, caseObj.getCaseStatus());
@@ -23,7 +37,7 @@ public class CasesDao {
     // READ the data by the cases number
     public Cases getCaseByNumber(String caseNumber) throws SQLException {
         String query = "SELECT * FROM Cases WHERE CASE_NUMBER = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, caseNumber);
             ResultSet rs = stmt.executeQuery();
@@ -46,7 +60,7 @@ public class CasesDao {
     public List<Cases> getAllCases() throws SQLException {
         String query = "SELECT * FROM Cases";
         List<Cases> casesList = new ArrayList<>();
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
@@ -66,7 +80,7 @@ public class CasesDao {
 
     public void updateCase(Cases caseObj) throws SQLException {
         String query = "UPDATE Cases SET CASE_STATUS = ?, RECEIVED_DATE = ?, DECISION_DATE = ?, ORIG_FILE_DATE = ?, PREVIOUS_SWA_CASE_NUMBER_STATE = ?, SCHD_A_SHEEPHERDER = ? WHERE CASE_NUMBER = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, caseObj.getCaseStatus());
             stmt.setDate(2, caseObj.getReceivedDate());
@@ -81,7 +95,7 @@ public class CasesDao {
 
     public void deleteCase(String caseNumber) throws SQLException {
         String query = "DELETE FROM Cases WHERE CASE_NUMBER = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, caseNumber);
             stmt.executeUpdate();

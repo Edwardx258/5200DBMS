@@ -2,11 +2,27 @@ package sponsor.dal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import sponsor.model.Perm;
+
 
 public class PermDAO {
+    private static PermDAO instance = null;
+    protected ConnectionManager connectionManager;
+
+    protected PermDAO() {
+        connectionManager = new ConnectionManager();
+    }
+
+    public static PermDAO getInstance() {
+        if (instance == null) {
+            instance = new PermDAO();
+        }
+        return instance;
+    }
+
     public void createPerm(Perm perm) throws SQLException {
         String query = "INSERT INTO Perm (CASE_NUMBER, APPROVAL_RATE, AVG_PROCESSING_TIME, INDUSTRY) VALUES (?, ?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, perm.getCaseNumber());
             stmt.setDouble(2, perm.getApprovalRate());
@@ -25,7 +41,7 @@ public class PermDAO {
     // READ the data by perm id
     public Perm getPermById(int permId) throws SQLException {
         String query = "SELECT * FROM Perm WHERE PERM_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, permId);
             ResultSet rs = stmt.executeQuery();
@@ -46,7 +62,7 @@ public class PermDAO {
     public List<Perm> getAllPerms() throws SQLException {
         String query = "SELECT * FROM Perm";
         List<Perm> permsList = new ArrayList<>();
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
@@ -64,7 +80,7 @@ public class PermDAO {
 
     public void updatePerm(Perm perm) throws SQLException {
         String query = "UPDATE Perm SET CASE_NUMBER = ?, APPROVAL_RATE = ?, AVG_PROCESSING_TIME = ?, INDUSTRY = ? WHERE PERM_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, perm.getCaseNumber());
             stmt.setDouble(2, perm.getApprovalRate());
@@ -77,7 +93,7 @@ public class PermDAO {
 
     public void deletePerm(int permId) throws SQLException {
         String query = "DELETE FROM Perm WHERE PERM_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, permId);
             stmt.executeUpdate();

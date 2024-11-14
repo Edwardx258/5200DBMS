@@ -3,11 +3,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import sponsor.model.Employer;
 
 public class EmployerDao {
     private static EmployerDao instance = null;
+    protected ConnectionManager connectionManager;
 
-    protected EmployerDao() {}
+    protected EmployerDao() {
+        connectionManager = new ConnectionManager();
+    }
 
     public static EmployerDao getInstance() {
         if (instance == null) {
@@ -18,7 +22,7 @@ public class EmployerDao {
 
     public Employer create(Employer employer) throws SQLException {
         String insertEmployer = "INSERT INTO Employer(EMPLOYER_NAME, EMPLOYER_ADDRESS_1, EMPLOYER_CITY, EMPLOYER_STATE_PROVINCE, EMPLOYER_POSTAL_CODE, EMPLOYER_COUNTRY) VALUES(?, ?, ?, ?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(insertEmployer, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             statement.setString(1, employer.getEmployerName());
@@ -43,7 +47,7 @@ public class EmployerDao {
 
     public Employer getEmployerById(int employerId) throws SQLException {
         String selectEmployer = "SELECT * FROM Employer WHERE EMPLOYER_ID=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(selectEmployer)) {
 
             statement.setInt(1, employerId);
@@ -65,7 +69,7 @@ public class EmployerDao {
 
     public Employer delete(Employer employer) throws SQLException {
         String deleteEmployer = "DELETE FROM Employer WHERE EMPLOYER_ID=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(deleteEmployer)) {
 
             statement.setInt(1, employer.getEmployerId());

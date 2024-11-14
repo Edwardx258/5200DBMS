@@ -3,11 +3,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import sponsor.model.H1B;
 
 public class H1BDao {
     private static H1BDao instance = null;
-
-    protected H1BDao() {}
+    protected ConnectionManager connectionManager;
+    protected H1BDao() {
+        connectionManager = new ConnectionManager();
+    }
 
     public static H1BDao getInstance() {
         if (instance == null) {
@@ -18,7 +21,7 @@ public class H1BDao {
 
     public H1B create(H1B h1b) throws SQLException {
         String insertH1B = "INSERT INTO H1B(CASE_NUMBER, CAP_STATUS, WAGE_LEVEL, PW_SOC_CODE) VALUES(?, ?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(insertH1B, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             statement.setString(1, h1b.getCaseNumber());
@@ -39,7 +42,7 @@ public class H1BDao {
 
     public H1B getH1BById(int h1bId) throws SQLException {
         String selectH1B = "SELECT * FROM H1B WHERE H1B_ID=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(selectH1B)) {
 
             statement.setInt(1, h1bId);
@@ -58,7 +61,7 @@ public class H1BDao {
 
     public H1B delete(H1B h1b) throws SQLException {
         String deleteH1B = "DELETE FROM H1B WHERE H1B_ID=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(deleteH1B)) {
 
             statement.setInt(1, h1b.getH1bId());

@@ -1,12 +1,26 @@
 package sponsor.dal;
+import sponsor.model.LaborCertification;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LaborCertificationDAO {
+    private static LaborCertificationDAO instance = null;
+    protected ConnectionManager connectionManager;
+
+    protected LaborCertificationDAO() {
+        connectionManager = new ConnectionManager();
+    }
+
+    public static LaborCertificationDAO getInstance() {
+        if (instance == null) {
+            instance = new LaborCertificationDAO();
+        }
+        return instance;
+    }
     public void createLaborCertification(LaborCertification laborCert) throws SQLException {
         String query = "INSERT INTO LaborCertification (CASE_NUMBER, APPROVAL_RATE, AVG_PROCESSING_TIME, INDUSTRY) VALUES (?, ?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, laborCert.getCaseNumber());
             stmt.setDouble(2, laborCert.getApprovalRate());
@@ -26,7 +40,7 @@ public class LaborCertificationDAO {
     // READ the data by certification id
     public LaborCertification getLaborCertificationById(int certificationId) throws SQLException {
         String query = "SELECT * FROM LaborCertification WHERE CERTIFICATION_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, certificationId);
             ResultSet rs = stmt.executeQuery();
@@ -47,7 +61,7 @@ public class LaborCertificationDAO {
     public List<LaborCertification> getAllLaborCertifications() throws SQLException {
         String query = "SELECT * FROM LaborCertification";
         List<LaborCertification> laborCertList = new ArrayList<>();
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
@@ -65,7 +79,7 @@ public class LaborCertificationDAO {
 
     public void updateLaborCertification(LaborCertification laborCert) throws SQLException {
         String query = "UPDATE LaborCertification SET CASE_NUMBER = ?, APPROVAL_RATE = ?, AVG_PROCESSING_TIME = ?, INDUSTRY = ? WHERE CERTIFICATION_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, laborCert.getCaseNumber());
             stmt.setDouble(2, laborCert.getApprovalRate());
@@ -78,7 +92,7 @@ public class LaborCertificationDAO {
 
     public void deleteLaborCertification(int certificationId) throws SQLException {
         String query = "DELETE FROM LaborCertification WHERE CERTIFICATION_ID = ?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, certificationId);
             stmt.executeUpdate();

@@ -3,11 +3,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import sponsor.model.Worker;
 
 public class WorkerDao {
     private static WorkerDao instance = null;
+    protected ConnectionManager connectionManager;
 
-    protected WorkerDao() {}
+    protected WorkerDao() {
+        connectionManager = new ConnectionManager();
+    }
 
     public static WorkerDao getInstance() {
         if (instance == null) {
@@ -18,7 +22,7 @@ public class WorkerDao {
 
     public Worker create(Worker worker) throws SQLException {
         String insertWorker = "INSERT INTO Worker(COUNTRY_OF_CITIZENSHIP, CLASS_OF_ADMISSION, FOREIGN_WORKER_EDUCATION, FOREIGN_WORKER_INST_OF_ED, FOREIGN_WORKER_INFO_MAJOR, EMP_DECL_TITLE) VALUES(?, ?, ?, ?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(insertWorker, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             statement.setString(1, worker.getCountryOfCitizenship());
@@ -41,7 +45,7 @@ public class WorkerDao {
 
     public Worker getWorkerById(int workerId) throws SQLException {
         String selectWorker = "SELECT * FROM Worker WHERE WORKER_ID=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(selectWorker)) {
 
             statement.setInt(1, workerId);
@@ -62,7 +66,7 @@ public class WorkerDao {
 
     public Worker delete(Worker worker) throws SQLException {
         String deleteWorker = "DELETE FROM Worker WHERE WORKER_ID=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(deleteWorker)) {
 
             statement.setInt(1, worker.getWorkerId());
