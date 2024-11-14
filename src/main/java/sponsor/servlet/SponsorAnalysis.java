@@ -19,7 +19,7 @@ public class SponsorAnalysis extends HttpServlet {
     protected H1BDao h1bDao;
     protected PermDAO permDao;
     protected JobDao jobDao;
-    
+
     @Override
     public void init() throws ServletException {
         employerDao = EmployerDao.getInstance();
@@ -28,13 +28,13 @@ public class SponsorAnalysis extends HttpServlet {
         permDao = PermDAO.getInstance();
         jobDao = JobDao.getInstance();
     }
-    
+
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Map<String, String> messages = new HashMap<String, String>();
         req.setAttribute("messages", messages);
-        
+
         try {
             List<CompanySponsorshipSummary> summaries = getCompanySponsorships();
             req.setAttribute("sponsorshipSummaries", summaries);
@@ -43,16 +43,16 @@ public class SponsorAnalysis extends HttpServlet {
             e.printStackTrace();
             throw new IOException(e);
         }
-        
+
         req.getRequestDispatcher("/SponsorAnalysis.jsp").forward(req, resp);
     }
-    
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         doGet(req, resp);
     }
-    
+
     private List<CompanySponsorshipSummary> getCompanySponsorships() throws SQLException {
         String query = """
             SELECT 
@@ -77,44 +77,44 @@ public class SponsorAnalysis extends HttpServlet {
             HAVING COUNT(*) >= 5
             ORDER BY COUNT(*) DESC
         """;
-        
+
         Map<Integer, CompanySponsorshipSummary> summaryMap = new HashMap<>();
-        
+
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
-            
+
             while (rs.next()) {
                 int employerId = rs.getInt("EMPLOYER_ID");
                 CompanySponsorshipSummary summary = summaryMap.computeIfAbsent(
-                    employerId,
-                    id -> {
-						try {
-							return new CompanySponsorshipSummary(
-							    rs.getString("EMPLOYER_NAME"),
-							    rs.getString("EMPLOYER_CITY"),
-							    rs.getString("EMPLOYER_STATE_PROVINCE")
-							);
-						} catch (SQLException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						return null;
-					}
+                        employerId,
+                        id -> {
+                            try {
+                                return new CompanySponsorshipSummary(
+                                        rs.getString("EMPLOYER_NAME"),
+                                        rs.getString("EMPLOYER_CITY"),
+                                        rs.getString("EMPLOYER_STATE_PROVINCE")
+                                );
+                            } catch (SQLException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                            return null;
+                        }
                 );
-                
+
                 summary.addApplication(
-                    rs.getString("SPONSORSHIP_TYPE"),
-                    rs.getString("JOB_TITLE"),
-                    rs.getString("CASE_STATUS"),
-                    rs.getInt("TOTAL_APPLICATIONS")
+                        rs.getString("SPONSORSHIP_TYPE"),
+                        rs.getString("JOB_TITLE"),
+                        rs.getString("CASE_STATUS"),
+                        rs.getInt("TOTAL_APPLICATIONS")
                 );
             }
         }
-        
+
         return summaryMap.values().stream()
-            .sorted((a, b) -> b.getTotalApplications() - a.getTotalApplications())
-            .toList();
+                .sorted((a, b) -> b.getTotalApplications() - a.getTotalApplications())
+                .toList();
     }
 }
 
@@ -126,15 +126,15 @@ class CompanySponsorshipSummary {
     private Map<String, Integer> jobRoles = new HashMap<>();
     private int totalApplications = 0;
     private int approvedApplications = 0;
-    
+
     public CompanySponsorshipSummary(String companyName, String city, String state) {
         this.companyName = companyName;
         this.city = city;
         this.state = state;
     }
-    
-    public void addApplication(String sponsorshipType, String jobTitle, 
-                             String status, int count) {
+
+    public void addApplication(String sponsorshipType, String jobTitle,
+                               String status, int count) {
         sponsorshipTypes.merge(sponsorshipType, count, Integer::sum);
         jobRoles.merge(jobTitle, count, Integer::sum);
         totalApplications += count;
@@ -142,15 +142,15 @@ class CompanySponsorshipSummary {
             approvedApplications += count;
         }
     }
-    
+
     // Getters
     public String getCompanyName() { return companyName; }
     public String getLocation() { return city + ", " + state; }
     public Map<String, Integer> getSponsorshipTypes() { return sponsorshipTypes; }
     public Map<String, Integer> getJobRoles() { return jobRoles; }
     public int getTotalApplications() { return totalApplications; }
-    public double getSuccessRate() { 
-        return totalApplications > 0 ? 
-            (double) approvedApplications / totalApplications * 100 : 0; 
+    public double getSuccessRate() {
+        return totalApplications > 0 ?
+                (double) approvedApplications / totalApplications * 100 : 0;
     }
 }
