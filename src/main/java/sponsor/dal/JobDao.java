@@ -10,9 +10,16 @@ import java.util.List;
 public class JobDao {
 	private static JobDao instance = null;
     protected ConnectionManager connectionManager;
+    private Connection connection = null;
 
     protected JobDao() {
         connectionManager = new ConnectionManager();
+        try {
+			connection = connectionManager.getConnection();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     public static JobDao getInstance() {
@@ -24,8 +31,8 @@ public class JobDao {
 
     public Job create(Job job) throws SQLException {
         String insertJob = "INSERT INTO Job(CASE_NUMBER, EMPLOYER_ID, JOB_TITLE, PW_SOC_CODE, PW_SOC_TITLE, PW_SKILL_LEVEL, PW_WAGE, WAGE_OFFER_FROM, WAGE_OFFER_TO, WAGE_OFFER_UNIT_OF_PAY) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(insertJob)) {
+//        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(insertJob);//) {
 
             statement.setString(1, job.getCaseNumber());
             statement.setInt(2, job.getEmployerId());
@@ -38,17 +45,19 @@ public class JobDao {
             statement.setDouble(9, job.getWageOfferTo());
             statement.setString(10, job.getWageOfferUnitOfPay());
             statement.executeUpdate();
+
             return job;
-        }
+//        }
     }
 
     public Job getJobByCaseNumber(String caseNumber) throws SQLException {
         String selectJob = "SELECT * FROM Job WHERE CASE_NUMBER=?";
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(selectJob)) {
+//        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(selectJob);//) {
 
             statement.setString(1, caseNumber);
             ResultSet results = statement.executeQuery();
+
 
             if (results.next()) {
                 int employerId = results.getInt("EMPLOYER_ID");
@@ -60,32 +69,35 @@ public class JobDao {
                 double wageOfferFrom = results.getDouble("WAGE_OFFER_FROM");
                 double wageOfferTo = results.getDouble("WAGE_OFFER_TO");
                 String wageOfferUnitOfPay = results.getString("WAGE_OFFER_UNIT_OF_PAY");
+
                 return new Job(caseNumber, employerId, jobTitle, pwSocCode, pwSocTitle, pwSkillLevel, pwWage, wageOfferFrom, wageOfferTo, wageOfferUnitOfPay);
             }
-        }
+
+//        }
         return null;
     }
 
     public Job delete(Job job) throws SQLException {
         String deleteJob = "DELETE FROM Job WHERE CASE_NUMBER=?";
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(deleteJob)) {
+//        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(deleteJob);//) {
 
             statement.setString(1, job.getCaseNumber());
             statement.executeUpdate();
             return null;
-        }
+//        }
     }
     
     public List<Job> getJobsByEmployerId(int employerId) throws SQLException {
         List<Job> jobs = new ArrayList<>();
         String selectByEmployer = "SELECT * FROM Job WHERE EMPLOYER_ID=?";
         
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(selectByEmployer)) {
+//        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(selectByEmployer);//) {
             
             statement.setInt(1, employerId);
             ResultSet results = statement.executeQuery();
+
             
             while (results.next()) {
                 Job job = new Job(
@@ -102,7 +114,8 @@ public class JobDao {
                 );
                 jobs.add(job);
             }
-        }
+
+//        }
         return jobs;
     }
 }
