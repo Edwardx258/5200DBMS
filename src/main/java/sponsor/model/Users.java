@@ -1,10 +1,11 @@
 package sponsor.model;
+
 import java.util.Date;
 
 /**
  * Users is a simple, plain old Java object (POJO).
  */
-public class User {
+public class Users {
     protected int userId;
     protected String username;
     protected String email;
@@ -12,7 +13,7 @@ public class User {
     protected Date createdAt;
 
     // Constructor with all fields
-    public User(int userId, String username, String email, String passwordHash, Date createdAt) {
+    public Users(int userId, String username, String email, String passwordHash, Date createdAt) {
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -21,7 +22,7 @@ public class User {
     }
 
     // Constructor with only essential fields
-    public User(String username, String email, String passwordHash) {
+    public Users(String username, String email, String passwordHash) {
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
