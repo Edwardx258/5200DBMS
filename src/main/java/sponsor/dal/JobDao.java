@@ -1,13 +1,17 @@
-package sponsor.dal;
+package sponsor.dal;import sponsor.model.*;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class JobDao {
-    private static JobDao instance = null;
+	private static JobDao instance = null;
+    protected ConnectionManager connectionManager;
 
-    protected JobDao() {}
+    protected JobDao() {
+        connectionManager = new ConnectionManager();
+    }
 
     public static JobDao getInstance() {
         if (instance == null) {
@@ -18,7 +22,7 @@ public class JobDao {
 
     public Job create(Job job) throws SQLException {
         String insertJob = "INSERT INTO Job(CASE_NUMBER, EMPLOYER_ID, JOB_TITLE, PW_SOC_CODE, PW_SOC_TITLE, PW_SKILL_LEVEL, PW_WAGE, WAGE_OFFER_FROM, WAGE_OFFER_TO, WAGE_OFFER_UNIT_OF_PAY) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(insertJob)) {
 
             statement.setString(1, job.getCaseNumber());
@@ -38,7 +42,7 @@ public class JobDao {
 
     public Job getJobByCaseNumber(String caseNumber) throws SQLException {
         String selectJob = "SELECT * FROM Job WHERE CASE_NUMBER=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(selectJob)) {
 
             statement.setString(1, caseNumber);
@@ -62,7 +66,7 @@ public class JobDao {
 
     public Job delete(Job job) throws SQLException {
         String deleteJob = "DELETE FROM Job WHERE CASE_NUMBER=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(deleteJob)) {
 
             statement.setString(1, job.getCaseNumber());

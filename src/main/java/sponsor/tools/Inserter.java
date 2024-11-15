@@ -1,7 +1,7 @@
 package sponsor.tools;
 
-import sponsor.dal.UsersDAO;
-import sponsor.model.User;
+import sponsor.dal.*;
+import sponsor.model.*;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
