@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JobDao {
 	private static JobDao instance = null;
@@ -73,5 +75,34 @@ public class JobDao {
             statement.executeUpdate();
             return null;
         }
+    }
+    
+    public List<Job> getJobsByEmployerId(int employerId) throws SQLException {
+        List<Job> jobs = new ArrayList<>();
+        String selectByEmployer = "SELECT * FROM Job WHERE EMPLOYER_ID=?";
+        
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(selectByEmployer)) {
+            
+            statement.setInt(1, employerId);
+            ResultSet results = statement.executeQuery();
+            
+            while (results.next()) {
+                Job job = new Job(
+                    results.getString("CASE_NUMBER"),
+                    results.getInt("EMPLOYER_ID"),
+                    results.getString("JOB_TITLE"),
+                    results.getString("PW_SOC_CODE"),
+                    results.getString("PW_SOC_TITLE"),
+                    results.getString("PW_SKILL_LEVEL"),
+                    results.getDouble("PW_WAGE"),
+                    results.getDouble("WAGE_OFFER_FROM"),
+                    results.getDouble("WAGE_OFFER_TO"),
+                    results.getString("WAGE_OFFER_UNIT_OF_PAY")
+                );
+                jobs.add(job);
+            }
+        }
+        return jobs;
     }
 }

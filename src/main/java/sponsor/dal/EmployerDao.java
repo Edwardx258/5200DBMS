@@ -5,6 +5,8 @@ import java.sql.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EmployerDao {
 	private static EmployerDao instance = null;
@@ -77,5 +79,29 @@ public class EmployerDao {
             statement.executeUpdate();
             return null;
         }
+    }
+    
+    public List<Employer> getAllEmployers() throws SQLException {
+        List<Employer> employers = new ArrayList<>();
+        String selectAll = "SELECT * FROM Employer";
+        
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(selectAll);
+             ResultSet results = statement.executeQuery()) {
+            
+            while (results.next()) {
+                Employer employer = new Employer(
+                    results.getInt("EMPLOYER_ID"),
+                    results.getString("EMPLOYER_NAME"),
+                    results.getString("EMPLOYER_ADDRESS_1"),
+                    results.getString("EMPLOYER_CITY"),
+                    results.getString("EMPLOYER_STATE_PROVINCE"),
+                    results.getString("EMPLOYER_POSTAL_CODE"),
+                    results.getString("EMPLOYER_COUNTRY")
+                );
+                employers.add(employer);
+            }
+        }
+        return employers;
     }
 }

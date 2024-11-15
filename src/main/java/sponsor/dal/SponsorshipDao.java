@@ -69,4 +69,22 @@ public class SponsorshipDao {
             return null;
         }
     }
+    
+    public Sponsorship getSponsorshipByCaseNumber(String caseNumber) throws SQLException {
+        String selectSponsorship = "SELECT * FROM Sponsorship WHERE CASE_NUMBER=?";
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(selectSponsorship)) {
+
+            statement.setString(1, caseNumber);
+            ResultSet results = statement.executeQuery();
+
+            if (results.next()) {
+                int sponsorshipId = results.getInt("SPONSORSHIP_ID");
+                String sponsorshipType = results.getString("SPONSORSHIP_TYPE");
+                String jobTitle = results.getString("JOB_TITLE");
+                return new Sponsorship(sponsorshipId, caseNumber, sponsorshipType, jobTitle);
+            }
+        }
+        return null;
+    }
 }
