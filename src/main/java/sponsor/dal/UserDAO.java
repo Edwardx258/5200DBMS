@@ -11,18 +11,18 @@ import java.util.List;
  * MySQL instance. This is used to store {@link Users} into your MySQL instance and 
  * retrieve {@link Users} from MySQL instance.
  */
-public class UserDao {
+public class UserDAO {
     // Single pattern: instantiation is limited to one object.
-    private static UserDao instance = null;
+    private static UserDAO instance = null;
     protected ConnectionManager connectionManager;
 
-    protected UserDao() {
+    protected UserDAO() {
         connectionManager = new ConnectionManager();
     }
 
     public static UserDao getInstance() {
         if (instance == null) {
-            instance = new UserDao();
+            instance = new UserDAO ();
         }
         return instance;
     }
