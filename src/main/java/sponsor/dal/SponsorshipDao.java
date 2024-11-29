@@ -1,13 +1,18 @@
 package sponsor.dal;
-import java.sql.Connection;
+import sponsor.model.*;
+
+import java.sql.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SponsorshipDao {
-    private static SponsorshipDao instance = null;
+	private static SponsorshipDao instance = null;
+    protected ConnectionManager connectionManager;
 
-    protected SponsorshipDao() {}
+    protected SponsorshipDao() {
+        connectionManager = new ConnectionManager();
+    }
 
     public static SponsorshipDao getInstance() {
         if (instance == null) {
@@ -18,7 +23,7 @@ public class SponsorshipDao {
 
     public Sponsorship create(Sponsorship sponsorship) throws SQLException {
         String insertSponsorship = "INSERT INTO Sponsorship(CASE_NUMBER, SPONSORSHIP_TYPE, JOB_TITLE) VALUES(?, ?, ?)";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(insertSponsorship, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             statement.setString(1, sponsorship.getCaseNumber());
@@ -38,7 +43,7 @@ public class SponsorshipDao {
 
     public Sponsorship getSponsorshipById(int sponsorshipId) throws SQLException {
         String selectSponsorship = "SELECT * FROM Sponsorship WHERE SPONSORSHIP_ID=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(selectSponsorship)) {
 
             statement.setInt(1, sponsorshipId);
@@ -56,12 +61,30 @@ public class SponsorshipDao {
 
     public Sponsorship delete(Sponsorship sponsorship) throws SQLException {
         String deleteSponsorship = "DELETE FROM Sponsorship WHERE SPONSORSHIP_ID=?";
-        try (Connection connection = ConnectionManager.getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(deleteSponsorship)) {
 
             statement.setInt(1, sponsorship.getSponsorshipId());
             statement.executeUpdate();
             return null;
         }
+    }
+    
+    public Sponsorship getSponsorshipByCaseNumber(String caseNumber) throws SQLException {
+        String selectSponsorship = "SELECT * FROM Sponsorship WHERE CASE_NUMBER=?";
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(selectSponsorship)) {
+
+            statement.setString(1, caseNumber);
+            ResultSet results = statement.executeQuery();
+
+            if (results.next()) {
+                int sponsorshipId = results.getInt("SPONSORSHIP_ID");
+                String sponsorshipType = results.getString("SPONSORSHIP_TYPE");
+                String jobTitle = results.getString("JOB_TITLE");
+                return new Sponsorship(sponsorshipId, caseNumber, sponsorshipType, jobTitle);
+            }
+        }
+        return null;
     }
 }

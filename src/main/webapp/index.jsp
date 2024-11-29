@@ -11,6 +11,11 @@
         <li><a href="UserRead.jsp">Read User</a></li>
         <li><a href="UserUpdate.jsp">Update User</a></li>
         <li><a href="UserDelete.jsp">Delete User</a></li>
+<<<<<<< HEAD
+=======
+        <li><a href="SponsorAnalysis.jsp">Check Sponsor Analysis</a></li>
+        
+>>>>>>> main
     </ul>
 </body>
 </html>
