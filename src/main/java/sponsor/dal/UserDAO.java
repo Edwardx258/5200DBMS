@@ -20,7 +20,7 @@ public class UserDAO {
         connectionManager = new ConnectionManager();
     }
 
-    public static UserDao getInstance() {
+    public static UserDAO getInstance() {
         if (instance == null) {
             instance = new UserDAO ();
         }
